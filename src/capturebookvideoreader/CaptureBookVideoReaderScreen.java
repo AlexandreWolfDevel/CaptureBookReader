@@ -1,7 +1,9 @@
 package capturebookvideoreader;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -17,40 +19,13 @@ import javax.swing.ImageIcon;
 
 public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
-    // Properties to load and save
-    private int timeBetweenCaptures = 300;
-    private int numbookPages = 833;
-    private int numCapturesInPage = 2;
-    private int timeToFirstCapture = 5000;
-    private boolean tryReconstructPages = true;
-
-    private int nextPageKey = KeyEvent.VK_PAGE_DOWN;
-    private int numTouchPage = 2;
-    private int rollPageKey = KeyEvent.VK_END;
-    private int numTouchRoll = 2;
-    private int pixelsInnerPages = 200;
-
-    private boolean saveImagesBlock = false;
-    private boolean savePages = false;
-    private boolean generatePDF = false;
-    private boolean saveSettingsParameters = false;
-    private boolean fixPixelsInnerPages = false;
-
-    private String filesDestination = "/temp/screenshot";
-    private int positionX1 = 0;
-    private int positionY1 = 0;
-    private int positionX2 = 0;
-    private int positionY2 = 0;
-
-    // Internal control
+    private BufferedImage images[] = null;
     private Robot robot = null;
-    private BufferedImage images[] = new BufferedImage[numCapturesInPage];
     private int offset = -1;
-    private int capX = 175, capY = 132, capWidth = 1723 - 175, capHeigth = 1198 - 132;
 
     private int screenResolutionX = 1920;
     private int screenResolutionY = 1200;
-    
+
     private int offsetScroolX = 0;
     private int offsetScroolY = 0;
     private int positionX = 0;
@@ -59,6 +34,10 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
     public CaptureBookVideoReaderScreen() {
 
         initComponents();
+        
+        getResolution();
+
+        System.out.println(screenResolutionX + " " + screenResolutionY);
 
         int pageDown = 0;
         int pageRoll = 0;
@@ -72,6 +51,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
                 pageRoll = i;
             }
         }
+
         cbNextPageKey.setSelectedIndex(pageDown);
         cbRollPageKey.setSelectedIndex(pageRoll);
 
@@ -79,61 +59,48 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         offsetScroolY = spShowImage.getVerticalScrollBarPolicy();
 
         try {
+            
+            robot = new Robot();
+            
             Properties props = new Properties();
             FileInputStream file = new FileInputStream("./CaptureBookReader.properties");
             props.load(file);
 
-            timeBetweenCaptures = Integer.parseInt(props.getProperty("timeBetweenCaptures"));
-            numbookPages = Integer.parseInt(props.getProperty("numbookPages"));
-            numCapturesInPage = Integer.parseInt(props.getProperty("numCapturesInPage"));
-            timeToFirstCapture = Integer.parseInt(props.getProperty("timeToFirstCapture"));
-            tryReconstructPages = Boolean.parseBoolean(props.getProperty("tryReconstructPages"));
+            tfTimeBetweenCaptures.setText(props.getProperty("tfTimeBetweenCaptures"));
+            tfNumBookPages.setText(props.getProperty("tfNumBookPages"));
+            tfNumCapturesInPage.setText(props.getProperty("tfNumCapturesInPage"));
+            tfTimeToFirstCapture.setText(props.getProperty("tfTimeToFirstCapture"));
+            cbTryReconstructPages.setSelected(Boolean.parseBoolean(props.getProperty("cbTryReconstructPages")));
 
-            nextPageKey = Integer.parseInt(props.getProperty("nextPageKey"));
-            numTouchPage = Integer.parseInt(props.getProperty("numTouchPage"));
-            rollPageKey = Integer.parseInt(props.getProperty("rollPageKey"));
-            numTouchRoll = Integer.parseInt(props.getProperty("numTouchRoll"));
-            pixelsInnerPages = Integer.parseInt(props.getProperty("pixelsInnerPages"));
+            cbNextPageKey.setSelectedIndex(Integer.parseInt(props.getProperty("cbNextPageKey")));
+            tfNumTouchPage.setText(props.getProperty("tfNumTouchPage"));
+            cbRollPageKey.setSelectedIndex(Integer.parseInt(props.getProperty("cbRollPageKey")));
+            tfNumTouchRoll.setText(props.getProperty("tfNumTouchRoll"));
+            tfPixelsInnerPages.setText(props.getProperty("tfPixelsInnerPages"));
 
-            saveImagesBlock = Boolean.parseBoolean(props.getProperty("saveImagesBlock"));
-            savePages = Boolean.parseBoolean(props.getProperty("savePages"));
-            generatePDF = Boolean.parseBoolean(props.getProperty("generatePDF"));
-            saveSettingsParameters = Boolean.parseBoolean(props.getProperty("saveSettingsParameters"));
-            fixPixelsInnerPages = Boolean.parseBoolean(props.getProperty("fixPixelsInnerPages"));
+            cbSaveImagesBlock.setSelected(Boolean.parseBoolean(props.getProperty("cbSaveImagesBlock")));
+            cbSavePages.setSelected(Boolean.parseBoolean(props.getProperty("cbSavePages")));
+            cbGeneratePDF.setSelected(Boolean.parseBoolean(props.getProperty("cbGeneratePDF")));
+            cbSaveSettingsParameters.setSelected(Boolean.parseBoolean(props.getProperty("cbSaveSettingsParameters")));
+            cbFixPixelsInnerPages.setSelected(Boolean.parseBoolean(props.getProperty("cbFixPixelsInnerPages")));
 
-            filesDestination = props.getProperty("filesDestination");
-            positionX1 = Integer.parseInt(props.getProperty("positionX1"));
-            positionY1 = Integer.parseInt(props.getProperty("positionY1"));
-            positionX2 = Integer.parseInt(props.getProperty("positionX2"));
-            positionY2 = Integer.parseInt(props.getProperty("positionY2"));
+            tfFilesDestination.setText(props.getProperty("tfFilesDestination"));
+            tfPositionX1.setText(props.getProperty("tfPositionX1"));
+            tfPositionY1.setText(props.getProperty("tfPositionY1"));
+            tfPositionX2.setText(props.getProperty("tfPositionX2"));
+            tfPositionY2.setText(props.getProperty("tfPositionY2"));
+
             file.close();
 
-            tfTimeBetweenCaptures.setText("" + timeBetweenCaptures);
-            tfNumBookPages.setText("" + numbookPages);
-            tfNumCapturesInPage.setText("" + numCapturesInPage);
-            tfTimeToFirstCapture.setText("" + timeToFirstCapture);
-            cbTryReconstructPages.setSelected(tryReconstructPages);
-
-            cbNextPageKey.setSelectedIndex(nextPageKey);
-            tfNumTouchPage.setText("" + numTouchPage);
-            cbRollPageKey.setSelectedIndex(rollPageKey);
-            tfNumTouchRoll.setText("" + numTouchRoll);
-            tfPixelsInnerPages.setText("" + pixelsInnerPages);
-
-            cbSaveImagesBlock.setSelected(saveImagesBlock);
-            cbSavePages.setSelected(savePages);
-            cbGeneratePDF.setSelected(generatePDF);
-            cbSaveSettingsParameters.setSelected(saveSettingsParameters);
-            cbFixPixelsInnerPages.setSelected(fixPixelsInnerPages);
-
-            tfFilesDestination.setText("" + filesDestination);
-            tfPositionX1.setText("" + positionX1);
-            tfPositionY1.setText("" + positionY1);
-            tfPositionX2.setText("" + positionX2);
-            tfPositionY2.setText("" + positionY2);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void getResolution() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        screenResolutionX = (int) screenSize.getWidth();
+        screenResolutionY = (int) screenSize.getHeight();
     }
 
     @SuppressWarnings("unchecked")
@@ -178,7 +145,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         paPixelsInnerPages = new javax.swing.JPanel();
         lbPixelsInnerPages = new javax.swing.JLabel();
         tfPixelsInnerPages = new javax.swing.JFormattedTextField();
-        PaSave = new javax.swing.JPanel();
+        paSave = new javax.swing.JPanel();
         cbSaveImagesBlock = new javax.swing.JCheckBox();
         cbSavePages = new javax.swing.JCheckBox();
         cbGeneratePDF = new javax.swing.JCheckBox();
@@ -190,7 +157,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         lbFilesDestination = new javax.swing.JLabel();
         tfFilesDestination = new javax.swing.JTextField();
         btFileDestination = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        paPositions = new javax.swing.JPanel();
         paPositionsX1 = new javax.swing.JPanel();
         lbPositionX1 = new javax.swing.JLabel();
         tfPositionX1 = new javax.swing.JFormattedTextField();
@@ -217,6 +184,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         mbMainMenu = new javax.swing.JMenuBar();
         mmFiles = new javax.swing.JMenu();
         mmUtil = new javax.swing.JMenu();
+        miSetInitialSuggestedValues = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Capture Book Reader");
@@ -258,6 +226,8 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
         getContentPane().add(tbToolBar, java.awt.BorderLayout.NORTH);
 
+        spMain.setDividerSize(3);
+
         paLeft.setLayout(new java.awt.GridLayout(4, 3));
 
         pqCaptures.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -281,11 +251,6 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         paNumberBookPages.add(lbNumBookPages);
 
         tfNumBookPages.setText("100");
-        tfNumBookPages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfNumBookPagesActionPerformed(evt);
-            }
-        });
         paNumberBookPages.add(tfNumBookPages);
 
         paCapturesTop.add(paNumberBookPages);
@@ -315,11 +280,6 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
         cbTryReconstructPages.setSelected(true);
         cbTryReconstructPages.setText("Try reconstruct pages (connect pages)");
-        cbTryReconstructPages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbTryReconstructPagesActionPerformed(evt);
-            }
-        });
         pqCaptures.add(cbTryReconstructPages, java.awt.BorderLayout.CENTER);
 
         paLeft.add(pqCaptures);
@@ -379,28 +339,28 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
         paLeft.add(paKeys);
 
-        PaSave.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        PaSave.setLayout(new javax.swing.BoxLayout(PaSave, javax.swing.BoxLayout.Y_AXIS));
+        paSave.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        paSave.setLayout(new javax.swing.BoxLayout(paSave, javax.swing.BoxLayout.Y_AXIS));
 
         cbSaveImagesBlock.setText("Save images block");
-        PaSave.add(cbSaveImagesBlock);
+        paSave.add(cbSaveImagesBlock);
 
         cbSavePages.setSelected(true);
         cbSavePages.setText("Save pages");
-        PaSave.add(cbSavePages);
+        paSave.add(cbSavePages);
 
         cbGeneratePDF.setSelected(true);
         cbGeneratePDF.setText("Generate PDF");
-        PaSave.add(cbGeneratePDF);
+        paSave.add(cbGeneratePDF);
 
         cbSaveSettingsParameters.setSelected(true);
         cbSaveSettingsParameters.setText("Save Settings Parameters");
-        PaSave.add(cbSaveSettingsParameters);
+        paSave.add(cbSaveSettingsParameters);
 
         cbFixPixelsInnerPages.setText("Fix Pixels inner Pages (defined by user)");
-        PaSave.add(cbFixPixelsInnerPages);
+        paSave.add(cbFixPixelsInnerPages);
 
-        paLeft.add(PaSave);
+        paLeft.add(paSave);
 
         paFiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         paFiles.setLayout(new java.awt.BorderLayout());
@@ -422,7 +382,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
         paFiles.add(paFilesTop, java.awt.BorderLayout.NORTH);
 
-        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.Y_AXIS));
+        paPositions.setLayout(new javax.swing.BoxLayout(paPositions, javax.swing.BoxLayout.Y_AXIS));
 
         paPositionsX1.setLayout(new java.awt.GridLayout(1, 2));
 
@@ -433,7 +393,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         tfPositionX1.setText("0");
         paPositionsX1.add(tfPositionX1);
 
-        jPanel1.add(paPositionsX1);
+        paPositions.add(paPositionsX1);
 
         paPositionsY1.setLayout(new java.awt.GridLayout(1, 2));
 
@@ -444,7 +404,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         tfPositionY1.setText("0");
         paPositionsY1.add(tfPositionY1);
 
-        jPanel1.add(paPositionsY1);
+        paPositions.add(paPositionsY1);
 
         paPositionsX2.setLayout(new java.awt.GridLayout(1, 2));
 
@@ -455,7 +415,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         tfPositionX2.setText("1920");
         paPositionsX2.add(tfPositionX2);
 
-        jPanel1.add(paPositionsX2);
+        paPositions.add(paPositionsX2);
 
         paPositionsY2.setLayout(new java.awt.GridLayout(1, 2));
 
@@ -466,9 +426,9 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         tfPositionY2.setText("1200");
         paPositionsY2.add(tfPositionY2);
 
-        jPanel1.add(paPositionsY2);
+        paPositions.add(paPositionsY2);
 
-        paFiles.add(jPanel1, java.awt.BorderLayout.SOUTH);
+        paFiles.add(paPositions, java.awt.BorderLayout.SOUTH);
 
         paLeft.add(paFiles);
 
@@ -518,6 +478,15 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
         mbMainMenu.add(mmFiles);
 
         mmUtil.setText("Util");
+
+        miSetInitialSuggestedValues.setText("Set initial suggested values");
+        miSetInitialSuggestedValues.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSetInitialSuggestedValuesActionPerformed(evt);
+            }
+        });
+        mmUtil.add(miSetInitialSuggestedValues);
+
         mbMainMenu.add(mmUtil);
 
         setJMenuBar(mbMainMenu);
@@ -528,11 +497,10 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
     private void btTestLocationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btTestLocationsActionPerformed
         try {
             Thread.sleep(Integer.parseInt(tfTimeToFirstCapture.getText()));
-            playSound("beep.wav");
-            Robot robot = new Robot();
             BufferedImage captureScreen = robot.createScreenCapture(new Rectangle(screenResolutionX, screenResolutionY));
             lbShowImage.setIcon(new ImageIcon(captureScreen));
             tbPanes.setSelectedIndex(0);
+            playSound("beep.wav");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -559,29 +527,29 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
             try {
                 FileOutputStream file = new FileOutputStream("./CaptureBookReader.properties");
 
-                file.write(("timeBetweenCaptures=" + tfTimeBetweenCaptures.getText() + "\n").getBytes());
-                file.write(("numBookPages=" + tfNumBookPages.getText() + "\n").getBytes());
-                file.write(("numCapturesInPage=" + tfNumCapturesInPage.getText() + "\n").getBytes());
-                file.write(("timeToFirstCapture=" + tfTimeToFirstCapture.getText() + "\n").getBytes());
-                file.write(("tryReconstructPages=" + cbTryReconstructPages.isSelected() + "\n").getBytes());
+                file.write(("tfTimeBetweenCaptures=" + tfTimeBetweenCaptures.getText() + "\n").getBytes());
+                file.write(("tfNumBookPages=" + tfNumBookPages.getText() + "\n").getBytes());
+                file.write(("tfNumCapturesInPage=" + tfNumCapturesInPage.getText() + "\n").getBytes());
+                file.write(("tfTimeToFirstCapture=" + tfTimeToFirstCapture.getText() + "\n").getBytes());
+                file.write(("cbTryReconstructPages=" + cbTryReconstructPages.isSelected() + "\n").getBytes());
 
-                file.write(("nextPageKey=" + cbNextPageKey.getSelectedIndex() + "\n").getBytes());
-                file.write(("numTouchPage=" + tfNumTouchPage.getText() + "\n").getBytes());
-                file.write(("rollPageKey=" + cbRollPageKey.getSelectedIndex() + "\n").getBytes());
-                file.write(("numTouchRoll=" + tfNumTouchRoll.getText() + "\n").getBytes());
-                file.write(("pixelsInnerPages=" + tfPixelsInnerPages.getText() + "\n").getBytes());
+                file.write(("cbNextPageKey=" + cbNextPageKey.getSelectedIndex() + "\n").getBytes());
+                file.write(("tfNumTouchPage=" + tfNumTouchPage.getText() + "\n").getBytes());
+                file.write(("cbRollPageKey=" + cbRollPageKey.getSelectedIndex() + "\n").getBytes());
+                file.write(("tfNumTouchRoll=" + tfNumTouchRoll.getText() + "\n").getBytes());
+                file.write(("tfPixelsInnerPages=" + tfPixelsInnerPages.getText() + "\n").getBytes());
 
-                file.write(("saveImagesBlock=" + cbSaveImagesBlock.isSelected() + "\n").getBytes());
-                file.write(("savePages=" + cbSavePages.isSelected() + "\n").getBytes());
-                file.write(("generatePDF=" + cbGeneratePDF.isSelected() + "\n").getBytes());
-                file.write(("saveSettingsParameters=" + cbSaveSettingsParameters.isSelected() + "\n").getBytes());
-                file.write(("fixPixelsInnerPages=" + cbFixPixelsInnerPages.isSelected() + "\n").getBytes());
+                file.write(("cbSaveImagesBlock=" + cbSaveImagesBlock.isSelected() + "\n").getBytes());
+                file.write(("cbSavePages=" + cbSavePages.isSelected() + "\n").getBytes());
+                file.write(("cbGeneratePDF=" + cbGeneratePDF.isSelected() + "\n").getBytes());
+                file.write(("cbSaveSettingsParameters=" + cbSaveSettingsParameters.isSelected() + "\n").getBytes());
+                file.write(("cbFixPixelsInnerPages=" + cbFixPixelsInnerPages.isSelected() + "\n").getBytes());
 
-                file.write(("filesDestination=" + tfFilesDestination + "\n").getBytes());
-                file.write(("positionX1=" + tfPositionX1 + "\n").getBytes());
-                file.write(("positionY1=" + tfPositionY1 + "\n").getBytes());
-                file.write(("positionX2=" + tfPositionX2 + "\n").getBytes());
-                file.write(("positionY2=" + tfPositionY2 + "\n").getBytes());
+                file.write(("tfFilesDestination=" + tfFilesDestination.getText() + "\n").getBytes());
+                file.write(("tfPositionX1=" + tfPositionX1.getText() + "\n").getBytes());
+                file.write(("tfPositionY1=" + tfPositionY1.getText() + "\n").getBytes());
+                file.write(("tfPositionX2=" + tfPositionX2.getText() + "\n").getBytes());
+                file.write(("tfPositionY2=" + tfPositionY2.getText() + "\n").getBytes());
 
                 file.close();
             } catch (Exception e) {
@@ -592,16 +560,20 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
     private void btPreviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPreviewActionPerformed
         try {
+
             Thread.sleep(Integer.parseInt(tfTimeToFirstCapture.getText()));
 
-            playSound("beep.wav");
+            int capX = Integer.parseInt(tfPositionX1.getText());
+            int capY = Integer.parseInt(tfPositionX1.getText());
+            int capWidth = Integer.parseInt(tfPositionX2.getText()) - capX;
+            int capHeigth = Integer.parseInt(tfPositionY2.getText()) - capY;
 
-            robot = new Robot();
             robot.mouseMove((capX + capWidth) / 2, (capY + capHeigth) / 2);
+            click(0);
 
             offset = -1;
 
-            if (numCapturesInPage > 1) {
+            if (Integer.parseInt(tfNumCapturesInPage.getText()) > 1) {
 
                 click(0);
                 click(0);
@@ -615,14 +587,13 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
                     int rolls = Integer.parseInt(tfNumTouchRoll.getText());
                     for (int j = 0; j < rolls; j++) {
-                        key(rollPageKey);
+                        key(cbRollPageKey.getSelectedIndex());
                     }
 
                     click(0);
                     click(0);
 
-                    int time = Integer.parseInt(tfTimeBetweenCaptures.getText());
-                    Thread.sleep(time);
+                    Thread.sleep(Integer.parseInt(tfTimeBetweenCaptures.getText()));
                 }
 
                 lbShowSecondaryImage.setIcon(new ImageIcon(captureScreen[0]));
@@ -633,50 +604,77 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
 
                 tbPanes.setSelectedIndex(0);
             } else {
-
+                BufferedImage captureScreen = robot.createScreenCapture(new Rectangle(screenResolutionX, screenResolutionY));
+                captureScreen = captureScreen.getSubimage(capX, capY, capWidth, capHeigth);
+                lbShowImage.setIcon(new ImageIcon(captureScreen));
+                tbPanes.setSelectedIndex(0);
             }
-
+            playSound("beep.wav");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }//GEN-LAST:event_btPreviewActionPerformed
 
-    private void cbTryReconstructPagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTryReconstructPagesActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbTryReconstructPagesActionPerformed
+    private void miSetInitialSuggestedValuesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSetInitialSuggestedValuesActionPerformed
+        tfTimeBetweenCaptures.setText("300");
+        tfNumBookPages.setText("30");
+        tfNumCapturesInPage.setText("2");
+        tfTimeToFirstCapture.setText("5000");
+        cbTryReconstructPages.setSelected(true);
 
-    private void tfNumBookPagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfNumBookPagesActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tfNumBookPagesActionPerformed
+        cbNextPageKey.setSelectedIndex(34);
+        tfNumTouchPage.setText("1");
+        cbRollPageKey.setSelectedIndex(35);
+        tfNumTouchRoll.setText("1");
+        tfPixelsInnerPages.setText("100");
+
+        cbSaveImagesBlock.setSelected(false);
+        cbSavePages.setSelected(false);
+        cbGeneratePDF.setSelected(true);
+        cbSaveSettingsParameters.setSelected(true);
+        cbFixPixelsInnerPages.setSelected(false);
+
+        tfFilesDestination.setText("/temp/files");
+        tfPositionX1.setText("0");
+        tfPositionY1.setText("0");
+        tfPositionX2.setText("1920");
+        tfPositionY2.setText("1080");
+    }//GEN-LAST:event_miSetInitialSuggestedValuesActionPerformed
 
     private void process() {
         try {
             Thread.sleep(5000);
 
-            robot = new Robot();
+            images = new BufferedImage[Integer.parseInt(tfNumCapturesInPage.getText())];
+            int capX = Integer.parseInt(tfPositionX1.getText());
+            int capY = Integer.parseInt(tfPositionX1.getText());
+            int capWidth = Integer.parseInt(tfPositionX2.getText()) - capX;
+            int capHeigth = Integer.parseInt(tfPositionY2.getText()) - capY;
+
+
             robot.mouseMove((capX + capWidth) / 2, (capY + capHeigth) / 2);
 
             offset = -1;
             int page = 0;
             while (page < 5) {
 
-                for (int j = 0; j < numCapturesInPage; j++) {
+                for (int j = 0; j < Integer.parseInt(tfNumCapturesInPage.getText()); j++) {
                     click(0);
                     click(0);
                     BufferedImage captureScreen = robot.createScreenCapture(new Rectangle(screenResolutionX, screenResolutionY));
                     images[j] = captureScreen.getSubimage(capX, capY, capWidth, capHeigth);
-                    key(rollPageKey);
+                    key(cbRollPageKey.getSelectedIndex());
                     Thread.sleep(100);
                 }
 
                 BufferedImage fullImage = imageUnion(images);
-                ImageIO.write(fullImage, "png", new File(filesDestination + "_" + capHeigth + "_" + page + ".png"));
+                ImageIO.write(fullImage, "png", new File(tfFilesDestination.getText() + "_" + capHeigth + "_" + page + ".png"));
 
                 page++;
                 click(0);
-                key(nextPageKey);
+                key(cbNextPageKey.getSelectedIndex());
 
-                Thread.sleep(timeBetweenCaptures);
+                Thread.sleep(Integer.parseInt(tfTimeBetweenCaptures.getText()));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -722,6 +720,11 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
     }
 
     private BufferedImage imageUnion(BufferedImage images[]) {
+        int capX = Integer.parseInt(tfPositionX1.getText());
+        int capY = Integer.parseInt(tfPositionX1.getText());
+        int capWidth = Integer.parseInt(tfPositionX2.getText()) - capX;
+        int capHeigth = Integer.parseInt(tfPositionY2.getText()) - capY;
+        int pixelsInnerPages = Integer.parseInt(tfPixelsInnerPages.getText());
         BufferedImage fullImage = new BufferedImage(capWidth, capHeigth * images.length, BufferedImage.TYPE_INT_ARGB);
         if (images.length > 1) {
 
@@ -766,7 +769,6 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel PaSave;
     private javax.swing.JButton btCapture;
     private javax.swing.JButton btFileDestination;
     private javax.swing.JButton btPreview;
@@ -779,7 +781,6 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
     private javax.swing.JCheckBox cbSavePages;
     private javax.swing.JCheckBox cbSaveSettingsParameters;
     private javax.swing.JCheckBox cbTryReconstructPages;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lbFilesDestination;
     private javax.swing.JLabel lbNextePageKey;
     private javax.swing.JLabel lbNumBookPages;
@@ -798,6 +799,7 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
     private javax.swing.JLabel lbTimeBetweenCaptures;
     private javax.swing.JLabel lbTimeToFistCapture;
     private javax.swing.JMenuBar mbMainMenu;
+    private javax.swing.JMenuItem miSetInitialSuggestedValues;
     private javax.swing.JMenu mmFiles;
     private javax.swing.JMenu mmUtil;
     private javax.swing.JPanel paButton;
@@ -814,11 +816,13 @@ public class CaptureBookVideoReaderScreen extends javax.swing.JFrame {
     private javax.swing.JPanel paNumTouchRoll;
     private javax.swing.JPanel paNumberBookPages;
     private javax.swing.JPanel paPixelsInnerPages;
+    private javax.swing.JPanel paPositions;
     private javax.swing.JPanel paPositionsX1;
     private javax.swing.JPanel paPositionsX2;
     private javax.swing.JPanel paPositionsY1;
     private javax.swing.JPanel paPositionsY2;
     private javax.swing.JPanel paRolPagekey;
+    private javax.swing.JPanel paSave;
     private javax.swing.JPanel paTime;
     private javax.swing.JPanel paTimeToFirstCapture;
     private javax.swing.JProgressBar pbProgressBar;

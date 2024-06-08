@@ -1,5 +1,6 @@
 package capturebookvideoreader;
 
+import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 
 public class CaptureBookVideoReader {
@@ -15,9 +16,10 @@ public class CaptureBookVideoReader {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
         CaptureBookVideoReaderScreen cap = new CaptureBookVideoReaderScreen();
-        cap.setSize(800, 530);
+        cap.setIconImage(new ImageIcon(cap.getClass().getResource("rsc/icon.png")).getImage());
+        cap.setSize(800, 650);
         cap.setVisible(true);
     }
 }
