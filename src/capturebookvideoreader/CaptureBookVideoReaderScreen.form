@@ -166,6 +166,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="100"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tfNumBookPagesActionPerformed"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -188,19 +191,19 @@
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Container class="javax.swing.JPanel" name="paWaitTimeToCapture">
+                    <Container class="javax.swing.JPanel" name="paTimeToFirstCapture">
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
                         <Property name="columns" type="int" value="2"/>
                         <Property name="rows" type="int" value="1"/>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JLabel" name="lbWaitTimeToCapture">
+                        <Component class="javax.swing.JLabel" name="lbTimeToFistCapture">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Wait time to capture"/>
+                            <Property name="text" type="java.lang.String" value="Time to first capture"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JFormattedTextField" name="tfWaitTimeToCapture">
+                        <Component class="javax.swing.JFormattedTextField" name="tfTimeToFirstCapture">
                           <Properties>
                             <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
                               <Format format="#0" subtype="-1" type="0"/>
@@ -269,19 +272,19 @@
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Container class="javax.swing.JPanel" name="paNumberTouchPage">
+                    <Container class="javax.swing.JPanel" name="paNumTouchPage">
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
                         <Property name="columns" type="int" value="2"/>
                         <Property name="rows" type="int" value="1"/>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JLabel" name="lbNumberTouchPage">
+                        <Component class="javax.swing.JLabel" name="lbNumTouchPage">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Number touch page"/>
+                            <Property name="text" type="java.lang.String" value="Num. touch page"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JFormattedTextField" name="tfNumberTouchPage">
+                        <Component class="javax.swing.JFormattedTextField" name="tfNumTouchPage">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="1"/>
                           </Properties>
@@ -307,19 +310,19 @@
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Container class="javax.swing.JPanel" name="paNumberTouchRoll">
+                    <Container class="javax.swing.JPanel" name="paNumTouchRoll">
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
                         <Property name="columns" type="int" value="2"/>
                         <Property name="rows" type="int" value="1"/>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JLabel" name="lbNumberTouchRoll">
+                        <Component class="javax.swing.JLabel" name="lbNumTouchRoll">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Number touch roll"/>
+                            <Property name="text" type="java.lang.String" value="Num. touch roll"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JFormattedTextField" name="tfNumberTouchRoll">
+                        <Component class="javax.swing.JFormattedTextField" name="tfNumTouchRoll">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="1"/>
                           </Properties>
@@ -362,7 +365,7 @@
                 <Property name="axis" type="int" value="1"/>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JCheckBox" name="scSaveImnagesBlock">
+                <Component class="javax.swing.JCheckBox" name="cbSaveImagesBlock">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Save images block"/>
                   </Properties>
@@ -381,6 +384,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="cbSaveSettingsParameters">
                   <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Save Settings Parameters"/>
                   </Properties>
                 </Component>
@@ -419,7 +423,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="lbFilesDestination">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Files destination"/>
+                            <Property name="text" type="java.lang.String" value="Files destination "/>
                           </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
@@ -537,7 +541,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="lbPositionY2">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="position Y2"/>
+                            <Property name="text" type="java.lang.String" value="Position Y2"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JFormattedTextField" name="tfPositionY2">
@@ -615,41 +619,6 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="lbShowThirdImage">
                 </Component>
-              </SubComponents>
-            </Container>
-            <Container class="javax.swing.JScrollPane" name="spShowTwoImages">
-              <Constraints>
-                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="Two Images overwrited">
-                    <Property name="tabTitle" type="java.lang.String" value="Two Images overwrited"/>
-                  </JTabbedPaneConstraints>
-                </Constraint>
-              </Constraints>
-
-              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-              <SubComponents>
-                <Container class="javax.swing.JPanel" name="paTwoImages">
-
-                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
-                    <Property name="useNullLayout" type="boolean" value="true"/>
-                  </Layout>
-                  <SubComponents>
-                    <Component class="javax.swing.JLabel" name="lbShowTwoImages1">
-                      <Constraints>
-                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
-                          <AbsoluteConstraints x="170" y="60" width="20" height="20"/>
-                        </Constraint>
-                      </Constraints>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="lbShowTwoImages2">
-                      <Constraints>
-                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
-                          <AbsoluteConstraints x="320" y="70" width="20" height="20"/>
-                        </Constraint>
-                      </Constraints>
-                    </Component>
-                  </SubComponents>
-                </Container>
               </SubComponents>
             </Container>
           </SubComponents>
